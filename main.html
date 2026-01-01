@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEW MD - WhatsApp Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .status-box {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 0.95em;
+        }
+
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-icon.active {
+            background: #28a745;
+        }
+
+        .status-icon.inactive {
+            background: #dc3545;
+        }
+
+        .status-icon.checking {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .qr-code {
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .qr-code.show {
+            display: block;
+        }
+
+        .qr-code img {
+            max-width: 300px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+            transform: translateY(-1px);
+        }
+
+        .code-display {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 20px 0;
+            word-break: break-all;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .container {
+                margin: 0;
+                border-radius: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .code-display {
+                font-size: 1.4em;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 DEW MD</h1>
+            <p>WhatsApp Bot Pairing Service</p>
+        </div>
+
+        <div class="status-box" id="statusBox">
+            <div class="status-item">
+                <div class="status-icon checking"></div>
+                <span>Checking API status...</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="number">WhatsApp Number</label>
+                <input type="tel" id="number" placeholder="Enter your number (e.g., 94760663483)" inputmode="numeric">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="submitBtn">Get Pairing Code</button>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Generating pairing code...</p>
+            </div>
+
+            <div id="qrCode" class="qr-code"></div>
+
+            <div id="codeContainer"></div>
+        </div>
+
+        <div class="footer">
+            Created by Dew Coders | DEW MD © 2025
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+    <script>
+        const numberInput = document.getElementById('number');
+        const submitBtn = document.getElementById('submitBtn');
+        const message = document.getElementById('message');
+        const loading = document.getElementById('loading');
+        const statusBox = document.getElementById('statusBox');
+        const codeContainer = document.getElementById('codeContainer');
+
+        // Check API status on page load
+        async function checkApiStatus() {
+            try {
+                const { data } = await axios.get('/api/status');
+                if (data.apiKeyBanned) {
+                    updateStatus('API Key Banned', false);
+                    submitBtn.disabled = true;
+                    showMessage('API key has been banned. Please contact support.', 'error');
+                } else {
+                    updateStatus('API Key Active', true);
+                }
+            } catch (error) {
+                updateStatus('Unable to verify', null);
+            }
+        }
+
+        function updateStatus(text, isActive) {
+            const icon = document.querySelector('.status-icon');
+            const statusItem = document.querySelector('.status-item');
+            
+            icon.classList.remove('checking', 'active', 'inactive');
+            if (isActive === true) {
+                icon.classList.add('active');
+            } else if (isActive === false) {
+                icon.classList.add('inactive');
+            }
+            
+            statusItem.innerHTML = `
+                <div class="status-icon ${isActive === true ? 'active' : isActive === false ? 'inactive' : 'checking'}"></div>
+                <span>${text}</span>
+            `;
+        }
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+        }
+
+        function hideMessage() {
+            message.className = 'message';
+        }
+
+        submitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const number = numberInput.value.replace(/[^0-9]/g, '');
+
+            if (!number) {
+                showMessage('Please enter a WhatsApp number', 'error');
+                return;
+            }
+
+            if (number.length < 11) {
+                showMessage('Invalid number. Please include country code (e.g., 94760663483)', 'error');
+                return;
+            }
+
+            hideMessage();
+            loading.classList.add('show');
+            codeContainer.innerHTML = '';
+            submitBtn.disabled = true;
+
+            try {
+                const { data } = await axios.get(`/code?number=${number}`);
+                
+                if (data.code) {
+                    const code = data.code;
+                    codeContainer.innerHTML = `
+                        <div class="code-display">${code}</div>
+                        <button class="copy-btn" onclick="copyCode('${code}')">📋 Copy Code</button>
+                        <p style="text-align: center; color: #666; margin-top: 15px; font-size: 0.9em;">
+                            Open WhatsApp → Settings → Linked Devices → Link a Device → Scan QR Code<br>
+                            Then enter this code when prompted.
+                        </p>
+                    `;
+                    showMessage('✅ Pairing code generated successfully!', 'success');
+                } else {
+                    showMessage('Failed to generate pairing code. Please try again.', 'error');
+                }
+            } catch (error) {
+                const errorMsg = error.response?.data?.error || 'An error occurred. Please try again.';
+                showMessage(errorMsg, 'error');
+            } finally {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showMessage('✅ Code copied to clipboard!', 'success');
+                setTimeout(hideMessage, 2000);
+            });
+        }
+
+        // Allow Enter key to submit
+        numberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+
+        // Check API status on load
+        checkApiStatus();
+    </script>
+</body>
+</html>
